@@ -19,3 +19,5 @@ module ApplicationLogging
   end
 
 end
+
+require_relative 'application_logging/railtie' if defined?(Rails)
