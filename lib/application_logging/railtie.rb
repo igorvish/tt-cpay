@@ -51,16 +51,11 @@ module ApplicationLogging
       ApplicationLogging::Subscribers::ActionController.attach_to(:action_controller)
       ApplicationLogging::Subscribers::GrapeMiddleware.attach_to(:grape_middleware)
       ApplicationLogging::Subscribers::ActiveJob.attach_to(:active_job)
+      ApplicationLogging::Subscribers::SidekiqJobLogger.attach_to(:sidekiq_job_logger)
     end
 
     # config.after_initialize do |app|
     # end
-
-    #
-    # Если делать production-решение, то нужно добавить middleware вместо этого 
-    # https://github.com/rails/rails/blob/v5.1.3/actionpack/lib/action_dispatch/middleware/debug_exceptions.rb
-    # Потому что оно перехватывает исключение и начинает его логировать построчно.
-    #
 
   end
 end
