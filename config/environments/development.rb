@@ -51,4 +51,48 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+  # Use a real queuing backend for Active Job (and separate queues per environment)
+  config.active_job.queue_adapter     = :sidekiq
+
+  # === Logging
+
+  config.log_tags = [
+    ->(r) { {request_id: r.request_id, client_ip: r.remote_ip, client_user_agent: r.user_agent}.compact }
+  ]
+
+  config.log_level = :debug
+
+  # # Original ActiveSupport Logger (TM)
+  # path = config.paths["log"].first
+  # unless File.exist? File.dirname path
+  #   FileUtils.mkdir_p File.dirname path
+  # end
+  # f = File.open path, "a"
+  # f.binmode
+  # f.sync = config.autoflush_log # if true make sure every write flushes
+  # config.logger = ApplicationLogging.mix_to(ActiveSupport::Logger.new(f))
+
+  # # Logstash Logger (Single-logger mode)
+  # config.logger = ApplicationLogging.mix_to(LogStashLogger.new(
+  #   uri: ENV.fetch('LOGSTASH_URI', 'tcp://localhost:12201'), sync: true
+  # ))
+
+  # # Logstash Logger (Multi-logger mode)
+  # # (Если захотим customize_event, то придется устанавливать для каждого.)
+  # config.logger = LogStashLogger.new(type: :multi_logger, outputs: [
+  #   { uri: ENV.fetch('LOGSTASH_URI', 'tcp://localhost:12201'), sync: true },
+  #   { type: :stdout },
+  # ])
+  # config.logger.loggers.each { |l| ApplicationLogging.mix_to(l) }
+
+  # Logstash Logger (Multi-device mode)
+  config.logger = ApplicationLogging.mix_to(
+    LogStashLogger.new(type: :multi_delegator, outputs: [
+      { uri: ENV.fetch('LOGSTASH_URI', 'tcp://localhost:12201'), sync: true },
+      { type: :stdout },
+    ])
+  )
+
+  config.logger.progname = ENV.fetch('APP_NAME', 'TT-CPAY-WEB')
 end

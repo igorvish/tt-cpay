@@ -54,5 +54,13 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+# Optimized JSON
+gem 'oj'
+gem 'oj_mimic_json'
+
 gem 'grape'
 gem 'sidekiq'
+
+# Логирование в ELK (используется для демонстрации и не закрывает требований задания)
+gem 'logstash-logger'
