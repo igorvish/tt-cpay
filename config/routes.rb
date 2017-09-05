@@ -3,4 +3,6 @@ Rails.application.routes.draw do
 
   root to: 'home#index'
 
+  mount API::V1::HomeApi => '/'
+
 end

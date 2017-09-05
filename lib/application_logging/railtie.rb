@@ -49,6 +49,7 @@ module ApplicationLogging
 
       # Подписываем свои сабскрайберы
       ApplicationLogging::Subscribers::ActionController.attach_to(:action_controller)
+      ApplicationLogging::Subscribers::GrapeMiddleware.attach_to(:grape_middleware)
       ApplicationLogging::Subscribers::ActiveJob.attach_to(:active_job)
     end
 
