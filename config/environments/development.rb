@@ -57,6 +57,8 @@ Rails.application.configure do
 
   # === Logging
 
+  config.web_console.whiny_requests = false
+
   config.log_tags = [
     ->(r) { {request_id: r.request_id, client_ip: r.remote_ip, client_user_agent: r.user_agent}.compact }
   ]

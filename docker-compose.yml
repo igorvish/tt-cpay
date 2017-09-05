@@ -1,0 +1,82 @@
+version: '3'
+
+services:
+  
+  app:
+    build: ../tt-cpay
+    ports:
+      - "3000:3000"
+    environment:
+      - APP_NAME=TT-CPAY-WEB
+      - RAILS_ENV=development
+      - LOGSTASH_URI=tcp://logstash:12201
+      - REDIS_URL=redis://redis:6379/1
+    links:
+      - redis
+      - logstash
+    depends_on:
+      - jobs
+    command: rails s -b 0.0.0.0 -p 3000
+
+  jobs:
+    build: ../tt-cpay
+    environment:
+      - APP_NAME=TT-CPAY-JOBS
+      - RAILS_ENV=development
+      - LOGSTASH_URI=tcp://logstash:12201
+      - REDIS_URL=redis://redis:6379/1
+    links:
+      - redis
+      - logstash
+    command: sidekiq
+
+  redis:
+    image: redis:3.0-alpine
+    ports:
+      - "6379:6379"
+
+  # https://www.elastic.co/guide/en/elasticsearch/reference/5.5/docker.html
+  # https://www.elastic.co/guide/en/elasticsearch/reference/5.5/security-settings.html
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.2
+    ports:
+      - "9200:9200"
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.host=0.0.0.0
+      # - logger.level=DEBUG
+      - transport.host=127.0.0.1
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+    volumes:
+      - data:/usr/share/elasticsearch/data
+
+  # https://www.elastic.co/guide/en/logstash/5.5/_pulling_the_image.html#_environment_variable_configuration
+  logstash:
+    image: docker.elastic.co/logstash/logstash:5.5.2
+    ports:
+      - "12201:12201/tcp"
+    environment:
+      - xpack.monitoring.enabled=false
+    links:
+      - elasticsearch
+    # command: --log.level=debug ...
+    command: -e 'input { tcp { port => 12201 type => apps codec => json } } output { elasticsearch { hosts => "elasticsearch:9200" } }'
+
+  # https://www.elastic.co/guide/en/kibana/5.5/_configuring_kibana_on_docker.html
+  # https://www.elastic.co/guide/en/kibana/5.5/settings.html
+  # https://stackoverflow.com/questions/36871862/programmatically-set-kibanas-default-index-pattern
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.5.2
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      # - XPACK_MONITORING_ENABLED=false
+      - LOGGING_QUIET=true
+    ports:
+      - "5601:5601"
+    links:
+      - elasticsearch
+
+volumes:
+
+  data:
